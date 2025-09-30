@@ -1,0 +1,50 @@
+(async () => {
+  const delay = ms => new Promise(r => setTimeout(r, ms));
+  
+  // Only select UNBOOKMARK buttons (filled bookmark icon)
+  const unbookmarkSelector = '[data-testid="removeBookmark"]';
+  
+  let removed = 0;
+  let noButtonsFound = 0;
+  const maxAttempts = 50; // Safety limit to prevent infinite loops
+  
+  console.log('Starting bookmark removal...');
+  
+  for (let i = 0; i < maxAttempts; i++) {
+    // Find all unbookmark buttons
+    const unbookmarkButtons = document.querySelectorAll(unbookmarkSelector);
+    
+    if (unbookmarkButtons.length === 0) {
+      noButtonsFound++;
+      
+      // If no buttons found twice in a row, we're probably done
+      if (noButtonsFound >= 2) {
+        console.log('No more bookmarks found. Done!');
+        break;
+      }
+      
+      // Scroll down to load more bookmarks
+      console.log('Scrolling to load more bookmarks...');
+      window.scrollTo(0, document.body.scrollHeight);
+      await delay(1500);
+      continue;
+    }
+    
+    // Reset the counter since we found buttons
+    noButtonsFound = 0;
+    
+    // Click the first unbookmark button
+    unbookmarkButtons[0].click();
+    removed++;
+    console.log(`✓ Removed bookmark #${removed}`);
+    
+    // Wait before next action
+    await delay(800);
+    
+    // Scroll a bit to ensure new content loads
+    window.scrollBy(0, 300);
+    await delay(400);
+  }
+  
+  console.log(`\n✓ Finished! Total bookmarks removed: ${removed}`);
+})();
